@@ -1,0 +1,23 @@
+# 部署用 compose：使用本地预构建产物的运行时镜像（Dockerfile.runtime），
+# 服务器只解压运行、不编译。适配 47.252.103.50 这类低内存机器。
+# 用法（服务器上 dd 目录）：
+#   docker compose -f docker-compose.deploy.yml up -d --build
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.runtime
+    image: ai-website-cloner:latest
+    container_name: ai-website-cloner
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/agent/ecommerce/home >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

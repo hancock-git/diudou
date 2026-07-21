@@ -1,0 +1,173 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Font stack copied verbatim from getComputedStyle on 124.174.43.52 */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "system-ui",
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+}
+
+:root {
+  /* Body + shell surfaces */
+  --background: #f4f4f5; /* zinc-100 */
+  --foreground: #18181b; /* zinc-900 */
+  --workspace-bg: #f6f8fb; /* main scroll bg */
+
+  --card: #ffffff;
+  --card-foreground: #020617; /* slate-950 */
+
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
+
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a; /* slate-900 */
+
+  --border: #e2e8f0; /* slate-200 */
+  --input: #e2e8f0;
+  --ring: #0471fe;
+
+  --primary: #0471fe;
+  --primary-foreground: #ffffff;
+
+  --destructive: #ef4444;
+
+  /* Slate palette values (subset actually used) */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  --radius: 12px;
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    line-height: 1.5;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+}
+
+@layer utilities {
+  .bg-workspace {
+    background-color: var(--workspace-bg);
+  }
+  .max-w-shell {
+    max-width: 1680px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Canvas editor — design tokens copied verbatim from da-ai.cc/canvas */
+/* ------------------------------------------------------------------ */
+:root {
+  --color-bg: #f4f4f5;
+  --color-bg-muted: #e4e4e7;
+  --canvas-text: rgba(25, 38, 54, 0.92);
+  --canvas-text-muted: rgba(71, 89, 111, 0.72);
+  --canvas-text-toolbar: color-mix(in srgb, rgba(25, 38, 54, 0.92) 68%, rgba(71, 89, 111, 0.72) 32%);
+  --canvas-line: rgba(39, 59, 80, 0.14);
+  --canvas-accent: #27272a;
+  --canvas-warm: #f97316;
+  --canvas-handle-bg: rgba(255, 255, 255, 0.96);
+  --canvas-handle-icon: rgba(31, 41, 55, 0.92);
+  --color-border-strong: rgba(0, 0, 0, 0.1);
+}
+
+/* React Flow overrides so the canvas matches the target 1:1 */
+.canvas-flow {
+  --xy-background-color: var(--color-bg);
+  --xy-edge-stroke-default: rgba(71, 89, 111, 0.55);
+  --xy-edge-stroke-selected-default: #27272a;
+  --xy-edge-stroke-width-default: 1.5;
+  --xy-connectionline-stroke-default: rgba(71, 89, 111, 0.55);
+  --xy-selection-background-color: rgba(39, 39, 42, 0.04);
+  --xy-selection-border-default: 1px dashed rgba(39, 39, 42, 0.35);
+  background-color: var(--color-bg);
+}
+.canvas-flow .react-flow__attribution {
+  display: none;
+}
+.canvas-flow .react-flow__edge-path {
+  stroke-linecap: round;
+}
+.canvas-flow .react-flow__handle {
+  border: 0;
+  background: transparent;
+  min-width: 0;
+  min-height: 0;
+}
+.canvas-flow .react-flow__node {
+  font-family: var(--font-sans);
+}
+.canvas-flow .react-flow__node.selected .canvas-node-card-body {
+  border-color: rgba(39, 39, 42, 0.85);
+  box-shadow: 0 0 0 1px rgba(39, 39, 42, 0.25), 0 8px 26px rgba(31, 45, 61, 0.1);
+}
+
+/* hand (pan) tool cursors + hide resize handles so it reads as pure panning */
+.canvas-flow-hand .react-flow__pane,
+.canvas-flow-hand .react-flow__node {
+  cursor: grab;
+}
+.canvas-flow-hand .react-flow__pane:active,
+.canvas-flow-hand.react-flow.dragging .react-flow__pane {
+  cursor: grabbing;
+}
+.canvas-flow-hand .react-flow__resize-control {
+  display: none;
+}

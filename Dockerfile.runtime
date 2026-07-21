@@ -1,0 +1,18 @@
+# 运行时镜像：直接使用本地预构建的 standalone 产物（runtime.tar.gz）。
+# 服务器上「零编译」——不跑 next build，只解压 + 拷贝 public + 启动 node。
+# 适配低内存服务器（构建 next 时会 OOM），把编译放在本地/CI 完成。
+FROM node:24.14.1-slim
+WORKDIR /app
+
+# ADD 会自动把 gzip tar 解压到 /app（含 server.js / node_modules / .next）
+ADD runtime.tar.gz ./
+# public 未打进 tar，直接用仓库里的静态资源
+COPY public ./public
+
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+
+EXPOSE 3000
+CMD ["node", "server.js"]
