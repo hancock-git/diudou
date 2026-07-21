@@ -33,7 +33,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-slate-100 via-white to-slate-100 flex items-center justify-center px-4 py-10">
+    <div
+      data-deploy-marker="20260721-smoke-test"
+      className="min-h-dvh bg-gradient-to-br from-slate-100 via-white to-slate-100 flex items-center justify-center px-4 py-10"
+    >
       <div className="mx-auto my-auto flex h-[600px] w-full max-w-[960px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
         {/* Left column — brand hero */}
         <div className="relative hidden w-[55%] flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 p-8 md:flex">
