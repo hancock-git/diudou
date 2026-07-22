@@ -8,6 +8,7 @@ import {
   Clapperboard,
   Clock,
   Copy,
+  Download,
   FileCheck2,
   FolderPlus,
   Image as ImageIcon,
@@ -16,6 +17,7 @@ import {
   Loader2,
   Mic,
   Music,
+  Play,
   Sparkles,
   Upload,
   Video,
@@ -28,7 +30,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   {
     key: "link",
-    label: "链接提文案",
+    label: "链接提取",
     short: "链接",
     icon: Link2,
     kind: "text",
@@ -84,6 +86,7 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
+type LinkExtractType = "copy" | "video";
 
 const MOCK_RESULT: Record<TabKey, string> = {
   link: "### 商品信息\n推测为 **爆款零食礼盒**（如坚果、肉脯、糖果组合等），主打「送礼有面 / 自用管饱」。\n\n### 口播文案\n家人们看过来！这款爆火礼盒今天直接买一送一，源头工厂直发，品质拉满价格打骨折。点开左下角小黄车，前 100 名下单再送专属好礼，手慢无！",
@@ -102,6 +105,7 @@ const QUICK_ACTIONS = [
 
 export function HomeComposer() {
   const [tab, setTab] = useState<TabKey>("link");
+  const [linkExtractType, setLinkExtractType] = useState<LinkExtractType>("copy");
   const [value, setValue] = useState("");
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState("");
@@ -111,6 +115,7 @@ export function HomeComposer() {
   const [elapsed, setElapsed] = useState(0);
   const [doneSeconds, setDoneSeconds] = useState<number | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [videoPreviewOpen, setVideoPreviewOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const timerRef = useRef<number | undefined>(undefined);
   const quickRef = useRef<HTMLDivElement>(null);
@@ -120,6 +125,7 @@ export function HomeComposer() {
   const isFile = current.kind === "file";
   const canExtract = isFile ? fileName.length > 0 : value.trim().length > 0;
   const done = !extracting && result.length > 0;
+  const isVideoLinkResult = tab === "link" && linkExtractType === "video" && done;
 
   const stopTimer = () => {
     if (timerRef.current !== undefined) {
@@ -149,6 +155,7 @@ export function HomeComposer() {
     setElapsed(0);
     setDoneSeconds(null);
     setQuickOpen(false);
+    setVideoPreviewOpen(false);
     setDragging(false);
   };
 
@@ -202,17 +209,19 @@ export function HomeComposer() {
 
   return (
     <div className="home-landing relative w-full overflow-visible">
-      <div className="relative z-[1] mx-auto flex w-full max-w-[1240px] flex-col items-center pt-[96px]">
+      <div className="relative z-[1] mx-auto flex w-full max-w-[1240px] flex-col items-center pt-[60px]">
         {/* blue radial wash behind the title */}
         <div className="pointer-events-none absolute left-1/2 top-0 z-0 h-[210px] w-full max-w-[860px] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_50%_100%_at_center_8%,#fdfcfc_0%,#9dd2ff_50%,rgba(157,210,255,0)_78%)] blur-[98px]" />
 
         {/* Title */}
         <div className="relative z-[1]">
-          <h1 className="inline-block whitespace-nowrap text-[24px] font-semibold not-italic leading-8 text-[#0f1419] sm:text-[28px] sm:leading-9">
-            <span className="text-[#0471FE]">丢抖AI电商</span>
-            <span>，为电商而生的</span>
-            <span className="text-[#0471FE]">AIGC</span>
-            <span>平台</span>
+          <h1 className="flex flex-col items-center text-center not-italic">
+            <span className="bg-gradient-to-r from-[#0A6CFF] via-[#7C3AED] to-[#FF3D8B] bg-clip-text text-[30px] font-extrabold leading-[1.18] text-transparent sm:text-[42px]">
+              想法丢给我，爆款抖给你
+            </span>
+            <span className="mt-3 text-[16px] font-semibold leading-6 tracking-[0.08em] text-[#1f2937] sm:text-[20px] sm:leading-7">
+              丢抖 · 电商内容智能创作平台
+            </span>
           </h1>
         </div>
 
@@ -256,7 +265,37 @@ export function HomeComposer() {
             {/* Left: input */}
             <div className="flex flex-col rounded-2xl border border-slate-200 bg-[#f8fafc] p-3">
               <div className="mb-2.5 flex items-center justify-between gap-2">
-                <label className="text-sm font-semibold text-[#0f1419]">{current.label}</label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="text-sm font-semibold text-[#0f1419]">{current.label}</label>
+                  {tab === "link" && (
+                    <div className="inline-flex rounded-lg bg-white p-0.5 shadow-[0_0_0_1px_rgba(226,232,240,1)]">
+                      {[
+                        { key: "copy", label: "提取文案" },
+                        { key: "video", label: "提取视频" },
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => {
+                            setLinkExtractType(item.key as LinkExtractType);
+                            setResult("");
+                            setCopied(false);
+                            setDoneSeconds(null);
+                            setQuickOpen(false);
+                          }}
+                          className={cn(
+                            "h-7 rounded-md px-2.5 text-xs font-semibold transition-all",
+                            linkExtractType === item.key
+                              ? "bg-[#0471FE] text-white shadow-sm"
+                              : "text-[#8a9099] hover:text-[#0f1419]",
+                          )}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={handleExtract}
@@ -350,29 +389,33 @@ export function HomeComposer() {
               <div className="flex flex-col rounded-2xl border border-slate-200 bg-[#f8fafc] p-3">
                 <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
                   <label className="shrink-0 text-sm font-semibold text-[#0f1419]">
-                    提取结果（{current.short}）
+                    {isVideoLinkResult ? "视频资源" : `提取结果（${current.short}）`}
                   </label>
                   <div className="flex flex-wrap items-center justify-end gap-1.5">
-                    {done && doneSeconds !== null && (
+                    {!isVideoLinkResult && done && doneSeconds !== null && (
                       <span className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-[#8a9099]">
                         <Clock className="h-3.5 w-3.5" />
                         本次提取仅用时 {doneSeconds} 秒
                       </span>
                     )}
-                    <ResultAction icon={FolderPlus} label="保存到资产库" />
-                    <ResultAction icon={Wand2} label="脚本改写/裂变" />
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      disabled={!result}
-                      className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-[#4c535c] transition-colors hover:bg-slate-50 hover:text-[#0f1419] disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {copied ? <Check className="h-3.5 w-3.5 text-[#0471FE]" /> : <Copy className="h-3.5 w-3.5" />}
-                      {copied ? "已复制" : "复制"}
-                    </button>
+                    {!isVideoLinkResult && (
+                      <>
+                        <ResultAction icon={FolderPlus} label="保存到资产库" />
+                        <ResultAction icon={Wand2} label="脚本改写/裂变" />
+                        <button
+                          type="button"
+                          onClick={handleCopy}
+                          disabled={!result}
+                          className="inline-flex h-7 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-[#4c535c] transition-colors hover:bg-slate-50 hover:text-[#0f1419] disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {copied ? <Check className="h-3.5 w-3.5 text-[#0471FE]" /> : <Copy className="h-3.5 w-3.5" />}
+                          {copied ? "已复制" : "复制"}
+                        </button>
+                      </>
+                    )}
 
                     {/* 快速成片 dropdown */}
-                    <div ref={quickRef} className="relative">
+                    {!isVideoLinkResult && <div ref={quickRef} className="relative">
                       <button
                         type="button"
                         onClick={() => setQuickOpen((v) => !v)}
@@ -414,7 +457,7 @@ export function HomeComposer() {
                           })}
                         </ul>
                       )}
-                    </div>
+                    </div>}
                   </div>
                 </div>
 
@@ -425,13 +468,58 @@ export function HomeComposer() {
                   </div>
                 )}
 
-                <div className="h-[132px] w-full overflow-y-auto rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm leading-6 no-scrollbar">
-                  {result ? (
+                {isVideoLinkResult ? (
+                  <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div className="grid min-h-[132px] grid-cols-[188px_minmax(0,1fr)_172px] max-lg:grid-cols-[188px_minmax(0,1fr)] max-sm:grid-cols-1">
+                      <button
+                        type="button"
+                        onClick={() => setVideoPreviewOpen(true)}
+                        className="group relative min-h-[132px] overflow-hidden bg-[#0f172a]"
+                        aria-label="播放视频"
+                      >
+                        <div className="absolute left-3 top-3 rounded-md bg-black px-2 py-1 text-[11px] font-bold text-white">
+                          B站
+                        </div>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_28%,rgba(4,113,254,0.35),transparent_34%),linear-gradient(135deg,#101827,#0b1120)]" />
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/92 text-[#0471FE] shadow-[0_12px_30px_rgba(0,0,0,0.25)] transition-transform group-hover:scale-110">
+                            <Play className="ml-0.5 h-5 w-5 fill-current" />
+                          </span>
+                        </span>
+                      </button>
+                      <div className="flex min-w-0 flex-col justify-center px-4 py-3">
+                        <h3 className="truncate text-[15px] font-bold text-[#0f1419]">
+                          同习主席会见时，哈萨克斯坦总统用中文表达感谢与祝贺
+                        </h3>
+                        <div className="mt-2 flex flex-wrap items-center gap-5 text-sm font-medium text-[#64748b]">
+                          <span>时长：0:39</span>
+                          <span>大小：4.1 MB</span>
+                        </div>
+                        <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#e9fbf2] px-2.5 py-1 text-xs font-bold text-[#12a36a]">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          已提取平台原始视频源
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center border-l border-slate-200 px-4 py-3 max-lg:col-span-2 max-lg:border-l-0 max-lg:border-t max-sm:col-span-1">
+                        <button
+                          type="button"
+                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#1F63F6] px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(31,99,246,0.25)] transition-colors hover:bg-[#1554de]"
+                        >
+                          <Download className="h-4 w-4" />
+                          保存视频
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[132px] w-full overflow-y-auto rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm leading-6 no-scrollbar">
+                    {result ? (
                     <p className="whitespace-pre-wrap text-[#1f2937]">{result}</p>
-                  ) : (
+                    ) : (
                     <p className="text-[#b4b8bf]">提取后的文案会出现在这里，也可以直接粘贴整理好的内容。</p>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Progress card */}
@@ -457,6 +545,35 @@ export function HomeComposer() {
           </div>
         </div>
       </div>
+      {videoPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-[#080d18] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold text-white">视频预览</div>
+                <div className="mt-0.5 truncate text-xs text-white/55">同习主席会见时，哈萨克斯坦总统用中文表达感谢与祝贺</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVideoPreviewOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="关闭视频预览"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="relative aspect-video bg-black">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(4,113,254,0.30),transparent_34%),linear-gradient(135deg,#0f172a,#020617)]" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#0471FE]">
+                  <Play className="ml-1 h-7 w-7 fill-current" />
+                </span>
+                <span className="mt-4 text-sm font-semibold text-white/75">静态预览效果</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -30,10 +30,11 @@ const BOTTOM_STYLES: Record<
 
 interface Props {
   open?: boolean;
+  collapsed?: boolean;
   onClose?: () => void;
 }
 
-export function Sidebar({ open = false, onClose }: Props) {
+export function Sidebar({ open = false, collapsed = false, onClose }: Props) {
   const pathname = usePathname();
 
   return (
@@ -49,8 +50,9 @@ export function Sidebar({ open = false, onClose }: Props) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex min-h-0 w-[min(82vw,280px)] shrink-0 flex-col border-r border-black/10 bg-white px-2 py-3 shadow-2xl shadow-black/15 transition-transform duration-300 md:static md:z-auto md:w-[76px] md:translate-x-0 md:shadow-none",
+          "fixed inset-y-0 left-0 z-50 flex min-h-0 w-[min(82vw,280px)] shrink-0 flex-col border-r border-black/10 bg-white px-2 py-3 shadow-2xl shadow-black/15 transition-all duration-300 md:static md:z-auto md:w-[76px] md:translate-x-0 md:shadow-none",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          collapsed && "md:w-0 md:overflow-hidden md:border-r-0 md:px-0",
         )}
       >
         <Link
