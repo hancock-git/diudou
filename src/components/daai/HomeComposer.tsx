@@ -86,7 +86,6 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
-type LinkExtractType = "copy" | "video";
 
 const MOCK_RESULT: Record<TabKey, string> = {
   link: "### 商品信息\n推测为 **爆款零食礼盒**（如坚果、肉脯、糖果组合等），主打「送礼有面 / 自用管饱」。\n\n### 口播文案\n家人们看过来！这款爆火礼盒今天直接买一送一，源头工厂直发，品质拉满价格打骨折。点开左下角小黄车，前 100 名下单再送专属好礼，手慢无！",
@@ -105,7 +104,6 @@ const QUICK_ACTIONS = [
 
 export function HomeComposer() {
   const [tab, setTab] = useState<TabKey>("link");
-  const [linkExtractType, setLinkExtractType] = useState<LinkExtractType>("copy");
   const [value, setValue] = useState("");
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState("");
@@ -124,7 +122,7 @@ export function HomeComposer() {
   const isFile = current.kind === "file";
   const canExtract = isFile ? fileName.length > 0 : value.trim().length > 0;
   const done = !extracting && result.length > 0;
-  const isVideoLinkResult = tab === "link" && linkExtractType === "video" && done;
+  const isVideoLinkResult = false;
 
   const stopTimer = () => {
     if (timerRef.current !== undefined) {
@@ -257,40 +255,12 @@ export function HomeComposer() {
           </div>
 
           {/* Two panels */}
-          <div className="mt-4 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
             {/* Left: input */}
             <div className="flex flex-col rounded-2xl border border-slate-200 bg-[#f8fafc] p-3">
               <div className="mb-2.5 flex items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="text-sm font-semibold text-[#0f1419]">{current.label}</label>
-                  {tab === "link" && (
-                    <div className="inline-flex rounded-lg bg-white p-0.5 shadow-[0_0_0_1px_rgba(226,232,240,1)]">
-                      {[
-                        { key: "copy", label: "提取文案" },
-                        { key: "video", label: "提取视频" },
-                      ].map((item) => (
-                        <button
-                          key={item.key}
-                          type="button"
-                          onClick={() => {
-                            setLinkExtractType(item.key as LinkExtractType);
-                            setResult("");
-                            setCopied(false);
-                            setDoneSeconds(null);
-                            setQuickOpen(false);
-                          }}
-                          className={cn(
-                            "h-7 rounded-md px-2.5 text-xs font-semibold transition-all",
-                            linkExtractType === item.key
-                              ? "bg-[#0471FE] text-white shadow-sm"
-                              : "text-[#8a9099] hover:text-[#0f1419]",
-                          )}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <button
                   type="button"
@@ -386,7 +356,7 @@ export function HomeComposer() {
                   <label className="shrink-0 text-sm font-semibold text-[#0f1419]">
                     {isVideoLinkResult ? "视频资源" : `提取结果（${current.short}）`}
                   </label>
-                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                  <div className="flex shrink-0 flex-nowrap items-center justify-end gap-1.5">
                     {!isVideoLinkResult && done && (
                       <span className="inline-flex h-7 items-center gap-1 rounded-lg bg-[#e8f8ee] px-2 text-xs font-medium text-[#1a9d54]">
                         <CheckCircle2 className="h-3.5 w-3.5" />1 个提取任务已完成
